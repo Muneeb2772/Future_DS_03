@@ -112,4 +112,4 @@ Moro, S., Laureano, R., & Cortez, P. (2011). *Using Data Mining for Bank Direct 
 
 ## 👤 Author
 
-**Umar** — CS (Cybersecurity) student · Future Interns DS&A Task 3 submission.
+**Muneeb** — CS student · Future Interns DS&A Task 3 submission.
