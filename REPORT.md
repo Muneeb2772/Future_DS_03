@@ -1,7 +1,7 @@
 # Marketing Funnel & Conversion Performance Analysis
 ### Bank Marketing Dataset — UCI ML Repository
 
-**Author:** Umar
+**Author:** Muneeb
 **Task:** Future Interns — Data Science & Analytics Task 3 (2026)
 **Dataset:** UCI Bank Marketing (Moro et al., 2011) · 45,211 records · May 2008 – Nov 2010
 
