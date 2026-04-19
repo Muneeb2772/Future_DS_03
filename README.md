@@ -1,5 +1,7 @@
 # Bank Marketing Funnel & Conversion Analysis
 
+🔗 **[Live Dashboard →](https://muneeb2772.github.io/Future_DS_03/)**
+
 **Future Interns – Data Science & Analytics Task 3 (2026)**
 Marketing Funnel & Conversion Performance Analysis on the UCI Bank Marketing dataset.
 
