@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run funnel analysis",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/funnel_analysis.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

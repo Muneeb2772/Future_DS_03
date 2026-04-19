@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank Marketing Funnel · Conversion Analysis Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --cream:    #f4efe6;
+    --paper:    #ebe4d6;
+    --ink:      #181410;
+    --ink-soft: #3a322a;
+    --rule:     #c9bfae;
+    --accent:   #c1272d;    /* signal red */
+    --gold:     #b08d3c;    /* highlight */
+    --green:    #3f6b4e;    /* positive */
+    --muted:    #7a6f5f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: "Fraunces", Georgia, serif;
+    font-optical-sizing: auto;
+    font-variation-settings: "opsz" 20;
+    line-height: 1.55;
+    padding: 0;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(193,39,45,0.04) 0%, transparent 40%),
+      radial-gradient(circle at 88% 82%, rgba(176,141,60,0.05) 0%, transparent 45%);
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    border-bottom: 3px double var(--ink);
+    padding: 36px 60px 28px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: end;
+    gap: 40px;
+    background: var(--cream);
+  }
+  .masthead .logo {
+    font-family: "Fraunces", serif;
+    font-weight: 900;
+    font-variation-settings: "opsz" 144;
+    font-size: 28px;
+    letter-spacing: -1px;
+    line-height: 0.9;
+  }
+  .masthead .logo em { color: var(--accent); font-style: normal; }
+  .masthead .masthead-center {
+    text-align: center;
+    border-left: 1px solid var(--rule);
+    border-right: 1px solid var(--rule);
+    padding: 0 40px;
+  }
+  .masthead .kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .masthead h1 {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 144;
+    font-weight: 400;
+    font-size: 34px;
+    line-height: 1.05;
+    letter-spacing: -0.5px;
+  }
+  .masthead h1 em { color: var(--accent); font-style: italic; }
+  .masthead .meta {
+    text-align: right;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    line-height: 1.8;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+  }
+  .masthead .meta strong { color: var(--ink); font-weight: 700; }
+
+  /* ---------- layout ---------- */
+  main { padding: 0 60px 80px; }
+  section { padding: 48px 0; border-bottom: 1px solid var(--rule); }
+  section:last-child { border-bottom: none; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 28px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .section-head .num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+  .section-head h2 {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 144;
+    font-weight: 500;
+    font-size: 30px;
+    letter-spacing: -0.5px;
+    flex: 1;
+  }
+  .section-head h2 em { color: var(--accent); font-style: italic; }
+  .section-head .lede {
+    font-family: "Inter", sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    max-width: 320px;
+    line-height: 1.5;
+  }
+
+  /* ---------- KPI row ---------- */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+  .kpi {
+    padding: 22px 24px;
+    border-right: 1px solid var(--rule);
+  }
+  .kpi:last-child { border-right: none; }
+  .kpi .label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .kpi .value {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 144;
+    font-weight: 500;
+    font-size: 42px;
+    line-height: 1;
+    letter-spacing: -1.5px;
+    color: var(--ink);
+  }
+  .kpi .value .unit { font-size: 20px; color: var(--muted); margin-left: 4px; }
+  .kpi .delta {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    margin-top: 8px;
+    color: var(--ink-soft);
+  }
+  .kpi .delta.up { color: var(--green); }
+  .kpi .delta.down { color: var(--accent); }
+
+  /* ---------- grid rows ---------- */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  .two-col-even {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px;
+  }
+
+  /* ---------- funnel visual ---------- */
+  .funnel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 0;
+  }
+  .funnel-bar {
+    position: relative;
+    background: var(--paper);
+    height: 74px;
+    overflow: hidden;
+    border-left: 4px solid var(--ink);
+    transition: transform 0.3s ease;
+  }
+  .funnel-bar:hover { transform: translateX(4px); }
+  .funnel-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--ink) 0%, var(--ink-soft) 100%);
+    transition: width 1s cubic-bezier(.2,.7,.2,1);
+  }
+  .funnel-bar.converted .fill { background: linear-gradient(90deg, var(--accent) 0%, #a8222a 100%); }
+  .funnel-bar .label {
+    position: absolute;
+    top: 0;
+    left: 16px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: var(--cream);
+    mix-blend-mode: difference;
+    z-index: 2;
+  }
+  .funnel-bar .label .stage-name {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.3px;
+  }
+  .funnel-bar .label .stage-desc {
+    font-family: "Inter", sans-serif;
+    font-size: 10px;
+    color: #ddd;
+    margin-top: 2px;
+  }
+  .funnel-bar .metric {
+    position: absolute;
+    top: 0;
+    right: 16px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    color: var(--ink);
+    z-index: 3;
+  }
+  .funnel-bar .metric .count {
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 700;
+    font-size: 20px;
+  }
+  .funnel-bar .metric .pct {
+    font-family: "Inter", sans-serif;
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .funnel-arrow {
+    text-align: center;
+    padding: 2px 0;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+  .funnel-arrow .drop { color: var(--accent); font-weight: 700; }
+
+  /* ---------- chart cards ---------- */
+  .card {
+    background: var(--paper);
+    padding: 24px;
+    position: relative;
+    border: 1px solid var(--rule);
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 6px; left: 6px; right: 6px; bottom: 6px;
+    border: 1px solid var(--rule);
+    pointer-events: none;
+  }
+  .card h3 {
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    font-size: 18px;
+    margin-bottom: 4px;
+    position: relative;
+  }
+  .card .sub {
+    font-family: "Inter", sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .chart-wrap {
+    position: relative;
+    height: 280px;
+  }
+  .chart-wrap.tall { height: 340px; }
+
+  /* ---------- narrative blocks ---------- */
+  .narrative {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 40;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+  .narrative p { margin-bottom: 12px; }
+  .narrative .dropcap::first-letter {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 144;
+    font-weight: 900;
+    font-size: 58px;
+    float: left;
+    line-height: 0.9;
+    padding: 4px 10px 0 0;
+    color: var(--accent);
+  }
+  .callout {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 20px 24px;
+    margin-top: 16px;
+    position: relative;
+  }
+  .callout .tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .callout .quote {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.4;
+  }
+
+  /* ---------- insights list ---------- */
+  .insights {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--ink);
+  }
+  .insight {
+    padding: 24px;
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+  .insight:nth-child(2n) { border-right: none; }
+  .insight .num-badge {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .insight h4 {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-size: 20px;
+    margin: 6px 0 10px;
+    line-height: 1.2;
+  }
+  .insight .body {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 20;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .insight .stat {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 700;
+    margin-top: 10px;
+    display: block;
+  }
+
+  /* ---------- recommendations ---------- */
+  .recs {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .rec {
+    display: grid;
+    grid-template-columns: 60px 1fr 180px;
+    gap: 24px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: start;
+  }
+  .rec:last-child { border-bottom: none; }
+  .rec .rec-num {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 144;
+    font-weight: 900;
+    font-size: 44px;
+    line-height: 1;
+    color: var(--accent);
+  }
+  .rec .rec-body h4 {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  .rec .rec-body p {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 20;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  .rec .rec-impact {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-align: right;
+    padding-top: 4px;
+    border-left: 1px solid var(--rule);
+    padding-left: 20px;
+    min-height: 60px;
+  }
+  .rec .rec-impact strong {
+    display: block;
+    color: var(--accent);
+    font-size: 22px;
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .rec .rec-impact .tag {
+    letter-spacing: 2px;
+    color: var(--muted);
+    font-size: 9px;
+    margin-bottom: 6px;
+  }
+
+  /* ---------- footer ---------- */
+  footer {
+    padding: 30px 60px;
+    border-top: 3px double var(--ink);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 960px) {
+    main, .masthead, footer { padding-left: 24px; padding-right: 24px; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .kpi:nth-child(2) { border-right: none; }
+    .kpi:nth-child(1), .kpi:nth-child(2) { border-bottom: 1px solid var(--rule); }
+    .two-col, .two-col-even, .three-col { grid-template-columns: 1fr; }
+    .insights { grid-template-columns: 1fr; }
+    .insight { border-right: none; }
+    .masthead { grid-template-columns: 1fr; text-align: left; }
+    .masthead .meta { text-align: left; }
+    .masthead .masthead-center { border: none; padding: 0; text-align: left; }
+    .rec { grid-template-columns: 1fr; }
+    .rec .rec-impact { border-left: none; padding-left: 0; text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =========================== MASTHEAD =========================== -->
+<header class="masthead">
+  <div class="logo">THE<br><em>FUNNEL</em><br>REPORT</div>
+  <div class="masthead-center">
+    <div class="kicker">VOL. 1 · ISSUE 01 · CONVERSION ANALYTICS</div>
+    <h1>Where the <em>money leaks out</em>:<br>a funnel autopsy of 45,211 cold calls</h1>
+  </div>
+  <div class="meta">
+    DATASET · UCI BANK MARKETING<br>
+    PERIOD · MAY 2008 – NOV 2010<br>
+    RECORDS · <strong>45,211</strong><br>
+    ANALYST · MUNEEB<br>
+    TASK · FUTURE INTERNS #3
+  </div>
+</header>
+
+<main>
+
+  <!-- =========================== KPI ROW =========================== -->
+  <section style="padding-top: 32px;">
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="label">Total Contacted</div>
+        <div class="value" id="kpi-contacted">—</div>
+        <div class="delta">Top of funnel</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Total Converted</div>
+        <div class="value" id="kpi-converted">—</div>
+        <div class="delta">Subscribed to term deposit</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Overall Conversion</div>
+        <div class="value"><span id="kpi-rate">—</span><span class="unit">%</span></div>
+        <div class="delta down">Well below industry 2-5%… wait — actually ABOVE</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Best Segment Lift</div>
+        <div class="value">5.5<span class="unit">×</span></div>
+        <div class="delta up">Previous campaign success = 64.7%</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== SECTION 1: THE FUNNEL =========================== -->
+  <section>
+    <div class="section-head">
+      <span class="num">§ 01</span>
+      <h2>The <em>five stages</em> of a phone campaign</h2>
+      <div class="lede">From initial contact list to signed subscription. Drop-off at every stage tells us where effort is wasted.</div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="funnel" id="funnel-visual"></div>
+      </div>
+      <div class="narrative">
+        <p class="dropcap">The headline number — 11.7% conversion on term-deposit subscriptions — hides a far more interesting story once the journey is broken into stages.</p>
+        <p>The biggest leak isn't at the end. It's <strong>Stage 1 → Stage 2</strong>, where 13,020 clients (28.8%) are marked with an unknown contact channel. These are people the campaign technically "targeted" but never actually reached through a tracked channel.</p>
+        <p>After that, engagement holds well (90%+), but the true filter is <strong>call quality</strong>. Once a real conversation happens, conversion probability is driven almost entirely by duration and prior-campaign history — not demographics.</p>
+        <div class="callout">
+          <div class="tag">KEY OBSERVATION</div>
+          <div class="quote">"The funnel loses more clients to channel failure than to rejection. Fix the pipe before worrying about the pitch."</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== SECTION 2: DROP-OFF ANALYSIS =========================== -->
+  <section>
+    <div class="section-head">
+      <span class="num">§ 02</span>
+      <h2>Where they <em>drop</em>, and why</h2>
+      <div class="lede">Each bar is a cohort that stopped advancing. The longest bar is where to focus intervention.</div>
+    </div>
+    <div class="two-col-even">
+      <div class="card">
+        <h3>Stage-to-stage drop-off</h3>
+        <div class="sub">Count of clients lost between each funnel stage</div>
+        <div class="chart-wrap"><canvas id="chart-dropoff"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Conversion by call duration</h3>
+        <div class="sub">Calls under 60 seconds convert at 0.19%. A real conversation is everything.</div>
+        <div class="chart-wrap"><canvas id="chart-duration"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== SECTION 3: SEGMENT PERFORMANCE =========================== -->
+  <section>
+    <div class="section-head">
+      <span class="num">§ 03</span>
+      <h2>Who <em>actually</em> converts</h2>
+      <div class="lede">Across job, age, seasonality, and campaign history — the variance is enormous.</div>
+    </div>
+
+    <div class="three-col">
+      <div class="card">
+        <h3>By job</h3>
+        <div class="sub">Students and retirees dominate — blue-collar lags badly</div>
+        <div class="chart-wrap tall"><canvas id="chart-job"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>By month</h3>
+        <div class="sub">March, Sep, Oct, Dec convert 4–5× the baseline</div>
+        <div class="chart-wrap tall"><canvas id="chart-month"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>By previous outcome</h3>
+        <div class="sub">Prior campaign success is the strongest single predictor</div>
+        <div class="chart-wrap tall"><canvas id="chart-poutcome"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== SECTION 4: FATIGUE & AGE =========================== -->
+  <section>
+    <div class="section-head">
+      <span class="num">§ 04</span>
+      <h2>The <em>fatigue curve</em> and the age bathtub</h2>
+      <div class="lede">Call them too many times and conversion collapses. Target the U-shape: under-25s and over-65s.</div>
+    </div>
+    <div class="two-col-even">
+      <div class="card">
+        <h3>Campaign contact fatigue</h3>
+        <div class="sub">Every extra call in a single campaign reduces probability of yes</div>
+        <div class="chart-wrap"><canvas id="chart-fatigue"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Conversion by age group</h3>
+        <div class="sub">Classic U-curve: young (likely savers) and retired (fixed income)</div>
+        <div class="chart-wrap"><canvas id="chart-age"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== SECTION 5: KEY INSIGHTS =========================== -->
+  <section>
+    <div class="section-head">
+      <span class="num">§ 05</span>
+      <h2>Five <em>drop-off insights</em> that matter</h2>
+      <div class="lede">Each finding is defensible from the data alone and converts directly to an intervention.</div>
+    </div>
+    <div class="insights">
+      <div class="insight">
+        <div class="num-badge">INSIGHT 01</div>
+        <h4>Channel attribution is broken for 1 in 3 contacts</h4>
+        <div class="body">13,020 clients (28.8%) have contact type "unknown." The conversion rate for this cohort is drastically lower than cellular/telephone. This is a data-capture failure, not necessarily a rejection — but it behaves like one at the analysis layer.</div>
+        <span class="stat">→ 28.8% of top-of-funnel wasted</span>
+      </div>
+      <div class="insight">
+        <div class="num-badge">INSIGHT 02</div>
+        <h4>Call duration is the single strongest predictor</h4>
+        <div class="body">Calls under 60 seconds convert at 0.19%. Calls over 10 minutes convert at 46%. Calls over 20 minutes convert at 61.6%. This isn't causation (long calls happen because the client is interested), but it is a brutal diagnostic signal for lead quality.</div>
+        <span class="stat">→ 324× conversion gap across duration buckets</span>
+      </div>
+      <div class="insight">
+        <div class="num-badge">INSIGHT 03</div>
+        <h4>Campaign fatigue starts at call #2</h4>
+        <div class="body">First-contact conversion is 14.6%. Second call drops to 11.2%. By the 5th call it's 7.9%, and by the 10th it's 4.2%. Calling the same client more than 3 times in one campaign is statistically counterproductive.</div>
+        <span class="stat">→ 71% relative decline from call 1 to call 10</span>
+      </div>
+      <div class="insight">
+        <div class="num-badge">INSIGHT 04</div>
+        <h4>Seasonality multiplies conversion 5×</h4>
+        <div class="body">March (52.0%), December (46.7%), September (46.5%), October (43.8%) convert at 4–5× the May baseline. May alone accounts for 30% of all contacts but has the worst conversion. The campaign is running on the wrong calendar.</div>
+        <span class="stat">→ Reallocating volume from May → Mar/Oct could 2–3× conversions</span>
+      </div>
+      <div class="insight">
+        <div class="num-badge">INSIGHT 05</div>
+        <h4>Prior success is a flashing green light</h4>
+        <div class="body">Clients who subscribed in a previous campaign convert at 64.7% — a 5.5× lift over baseline. Yet they represent only 3.3% of the contact list. This is the lowest-CAC segment by a wide margin and is being massively under-prioritized.</div>
+        <span class="stat">→ 64.7% conversion vs 11.7% baseline</span>
+      </div>
+      <div class="insight">
+        <div class="num-badge">INSIGHT 06</div>
+        <h4>Age creates a "bathtub" — the middle is dead</h4>
+        <div class="body">Under-25s convert at 25.6%, over-65s at 42.1%, but the 35-54 bracket converts at only ~9%. Working-age prime earners are the hardest to convert to term deposits — likely because competing investment options are more attractive.</div>
+        <span class="stat">→ Middle-age conversion is HALF the baseline</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== SECTION 6: RECOMMENDATIONS =========================== -->
+  <section>
+    <div class="section-head">
+      <span class="num">§ 06</span>
+      <h2>Actionable <em>recommendations</em></h2>
+      <div class="lede">Six interventions ranked by estimated impact on overall conversion rate.</div>
+    </div>
+    <div class="recs">
+
+      <div class="rec">
+        <div class="rec-num">01</div>
+        <div class="rec-body">
+          <h4>Re-target previous-success clients with a dedicated campaign</h4>
+          <p>The 1,511 clients with <code>poutcome = success</code> convert at 64.7%. Build a tiered nurture program for them: priority dialing queue, senior agent assignment, premium product offers. This is the lowest hanging fruit in the entire dataset.</p>
+        </div>
+        <div class="rec-impact">
+          <div class="tag">EST. IMPACT</div>
+          <strong>+8–12%</strong>on segment<br>on a 1,500-client base
+        </div>
+      </div>
+
+      <div class="rec">
+        <div class="rec-num">02</div>
+        <div class="rec-body">
+          <h4>Shift call volume out of May into March, September, October</h4>
+          <p>May receives the highest call volume but the lowest conversion rate (~6-7%). Mar/Sep/Oct convert at 44–52%. Reallocating even 20% of May's volume to these months — without adding budget — should multiply conversions materially.</p>
+        </div>
+        <div class="rec-impact">
+          <div class="tag">EST. IMPACT</div>
+          <strong>+30–40%</strong>total conversions<br>zero-cost reallocation
+        </div>
+      </div>
+
+      <div class="rec">
+        <div class="rec-num">03</div>
+        <div class="rec-body">
+          <h4>Cap campaign contacts at 3 per client</h4>
+          <p>Calls 4+ have diminishing and eventually negative returns. After the 3rd attempt, route the client to a different channel (SMS, email, in-branch) rather than keep dialing. Expect a modest conversion lift and substantial agent-hour savings.</p>
+        </div>
+        <div class="rec-impact">
+          <div class="tag">EST. IMPACT</div>
+          <strong>-25%</strong>agent time wasted<br>on low-conversion calls
+        </div>
+      </div>
+
+      <div class="rec">
+        <div class="rec-num">04</div>
+        <div class="rec-body">
+          <h4>Fix contact-channel data capture (remove "unknown")</h4>
+          <p>28.8% of records having "unknown" contact type is a data-pipeline issue as much as a marketing one. This cohort underperforms because we can't even confirm they were reached. Require channel logging at the CRM level — any unlogged dial should fail silently in analytics, not count as "contacted."</p>
+        </div>
+        <div class="rec-impact">
+          <div class="tag">EST. IMPACT</div>
+          <strong>+20%</strong>funnel-reach accuracy<br>better attribution overall
+        </div>
+      </div>
+
+      <div class="rec">
+        <div class="rec-num">05</div>
+        <div class="rec-body">
+          <h4>Prioritize students, retirees, and the over-65 segment</h4>
+          <p>Students (28.7%), retirees (22.8%), and over-65s (42.1%) are high-converters with relatively little competition for their capital. Design tailored scripts and product bundles for each — CD-like products with no early-withdrawal penalties for retirees, starter-saver messaging for students.</p>
+        </div>
+        <div class="rec-impact">
+          <div class="tag">EST. IMPACT</div>
+          <strong>2–3×</strong>conversion<br>in targeted segments
+        </div>
+      </div>
+
+      <div class="rec">
+        <div class="rec-num">06</div>
+        <div class="rec-body">
+          <h4>Train agents to hold conversations past the 60-second mark</h4>
+          <p>The cliff between &lt;60s calls (0.19% conversion) and 60–180s calls (3.9%) is 20×. Script coaching focused on the first 60 seconds — opening line, qualifying question, permission to continue — is the highest-leverage agent-training investment available.</p>
+        </div>
+        <div class="rec-impact">
+          <div class="tag">EST. IMPACT</div>
+          <strong>+5–8%</strong>absolute conversion lift<br>across all segments
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div>BANK MARKETING FUNNEL · ANALYSIS REPORT · 2026</div>
+  <div>DATA · UCI MACHINE LEARNING REPOSITORY · MORO ET AL. 2011</div>
+  <div>BUILT WITH · PYTHON · PANDAS · CHART.JS</div>
+</footer>
+
+<script>
+// ---------------- constants ----------------
+const INK = "#181410";
+const INK_SOFT = "#3a322a";
+const ACCENT = "#c1272d";
+const GOLD = "#b08d3c";
+const GREEN = "#3f6b4e";
+const RULE = "#c9bfae";
+const CREAM = "#f4efe6";
+const PAPER = "#ebe4d6";
+const MUTED = "#7a6f5f";
+
+const fmt = n => n.toLocaleString("en-US");
+
+// ---------------- KPI hydration ----------------
+document.getElementById("kpi-contacted").textContent = fmt(DASHBOARD_DATA.overall.total_contacts);
+document.getElementById("kpi-converted").textContent = fmt(DASHBOARD_DATA.overall.total_conversions);
+document.getElementById("kpi-rate").textContent = DASHBOARD_DATA.overall.baseline_rate_pct;
+
+// ---------------- funnel visual ----------------
+const funnelEl = document.getElementById("funnel-visual");
+const totalTop = DASHBOARD_DATA.funnel[0].count;
+DASHBOARD_DATA.funnel.forEach((s, i) => {
+  const bar = document.createElement("div");
+  bar.className = "funnel-bar" + (s.stage === "Converted" ? " converted" : "");
+  const widthPct = (s.count / totalTop) * 100;
+  bar.innerHTML = `
+    <div class="fill" style="width:0%"></div>
+    <div class="label">
+      <div class="stage-name">${i+1}. ${s.stage}</div>
+      <div class="stage-desc">${s.description}</div>
+    </div>
+    <div class="metric">
+      <div class="count">${fmt(s.count)}</div>
+      <div class="pct">${s.pct_of_total}% of top · ${s.stage_conversion_pct}% step</div>
+    </div>`;
+  funnelEl.appendChild(bar);
+  setTimeout(() => bar.querySelector(".fill").style.width = widthPct + "%", 100 + i * 180);
+
+  if (i < DASHBOARD_DATA.funnel.length - 1) {
+    const arrow = document.createElement("div");
+    arrow.className = "funnel-arrow";
+    arrow.innerHTML = `↓ <span class="drop">–${fmt(DASHBOARD_DATA.funnel[i+1].drop_off)}</span> lost (${(100 - DASHBOARD_DATA.funnel[i+1].stage_conversion_pct).toFixed(1)}% drop)`;
+    funnelEl.appendChild(arrow);
+  }
+});
+
+// ---------------- chart.js global defaults ----------------
+Chart.defaults.font.family = '"Inter", sans-serif';
+Chart.defaults.color = INK_SOFT;
+Chart.defaults.borderColor = RULE;
+
+const baseOpts = (extra = {}) => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: INK,
+      titleFont: { family: '"Fraunces", serif', weight: "700", size: 13 },
+      bodyFont: { family: '"JetBrains Mono", monospace', size: 11 },
+      padding: 10,
+      borderColor: ACCENT,
+      borderWidth: 1,
+      cornerRadius: 0,
+    },
+    ...extra.plugins,
+  },
+  scales: extra.scales,
+  ...extra.rest,
+});
+
+// ---------------- chart: drop-off ----------------
+const dropData = DASHBOARD_DATA.funnel.slice(1);
+new Chart(document.getElementById("chart-dropoff"), {
+  type: "bar",
+  data: {
+    labels: dropData.map(s => `${s.stage}`),
+    datasets: [{
+      label: "Clients lost",
+      data: dropData.map(s => s.drop_off),
+      backgroundColor: dropData.map((_, i) => i === 0 ? ACCENT : i === dropData.length - 1 ? ACCENT : INK_SOFT),
+      borderWidth: 0,
+    }],
+  },
+  options: baseOpts({
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 11, weight: "600" } } },
+      y: { grid: { color: RULE }, ticks: { callback: v => fmt(v) } },
+    },
+  }),
+});
+
+// ---------------- chart: duration buckets ----------------
+const dur = DASHBOARD_DATA.duration_buckets;
+new Chart(document.getElementById("chart-duration"), {
+  type: "bar",
+  data: {
+    labels: dur.map(d => d.duration_bucket),
+    datasets: [{
+      label: "Conversion %",
+      data: dur.map(d => d.conversion_pct),
+      backgroundColor: dur.map(d => {
+        if (d.conversion_pct > 40) return ACCENT;
+        if (d.conversion_pct > 15) return GOLD;
+        return INK_SOFT;
+      }),
+      borderWidth: 0,
+    }],
+  },
+  options: baseOpts({
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: RULE }, ticks: { callback: v => v + "%" } },
+    },
+    plugins: {
+      tooltip: {
+        callbacks: {
+          afterLabel: ctx => `${fmt(dur[ctx.dataIndex].calls)} calls · ${fmt(dur[ctx.dataIndex].converted)} converted`,
+        },
+      },
+    },
+  }),
+});
+
+// ---------------- chart: by job ----------------
+const jobs = DASHBOARD_DATA.by_job.slice(0, 10);
+new Chart(document.getElementById("chart-job"), {
+  type: "bar",
+  data: {
+    labels: jobs.map(j => j.job),
+    datasets: [{
+      data: jobs.map(j => j.conversion_rate_pct),
+      backgroundColor: jobs.map(j => j.conversion_rate_pct > 20 ? ACCENT : j.conversion_rate_pct > 13 ? GOLD : INK_SOFT),
+      borderWidth: 0,
+    }],
+  },
+  options: baseOpts({
+    rest: { indexAxis: "y" },
+    scales: {
+      x: { grid: { color: RULE }, ticks: { callback: v => v + "%" } },
+      y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+    },
+  }),
+});
+
+// ---------------- chart: by month ----------------
+const monthOrder = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+const months = [...DASHBOARD_DATA.by_month].sort((a,b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month));
+new Chart(document.getElementById("chart-month"), {
+  type: "bar",
+  data: {
+    labels: months.map(m => m.month),
+    datasets: [{
+      data: months.map(m => m.conversion_rate_pct),
+      backgroundColor: months.map(m => m.conversion_rate_pct > 35 ? ACCENT : m.conversion_rate_pct > 15 ? GOLD : INK_SOFT),
+      borderWidth: 0,
+    }],
+  },
+  options: baseOpts({
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+      y: { grid: { color: RULE }, ticks: { callback: v => v + "%" } },
+    },
+  }),
+});
+
+// ---------------- chart: by poutcome ----------------
+const po = DASHBOARD_DATA.by_poutcome;
+new Chart(document.getElementById("chart-poutcome"), {
+  type: "bar",
+  data: {
+    labels: po.map(p => p.poutcome),
+    datasets: [{
+      data: po.map(p => p.conversion_rate_pct),
+      backgroundColor: po.map(p => p.poutcome === "success" ? ACCENT : INK_SOFT),
+      borderWidth: 0,
+    }],
+  },
+  options: baseOpts({
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: RULE }, ticks: { callback: v => v + "%" } },
+    },
+  }),
+});
+
+// ---------------- chart: campaign fatigue ----------------
+const fat = DASHBOARD_DATA.campaign_fatigue;
+new Chart(document.getElementById("chart-fatigue"), {
+  type: "line",
+  data: {
+    labels: fat.map(f => "Call #" + f.contacts_in_campaign),
+    datasets: [{
+      label: "Conversion %",
+      data: fat.map(f => f.conversion_pct),
+      borderColor: ACCENT,
+      backgroundColor: "rgba(193,39,45,0.08)",
+      fill: true,
+      tension: 0.35,
+      borderWidth: 2.5,
+      pointBackgroundColor: ACCENT,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    }],
+  },
+  options: baseOpts({
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: RULE }, ticks: { callback: v => v + "%" }, beginAtZero: true },
+    },
+  }),
+});
+
+// ---------------- chart: age groups ----------------
+const ages = DASHBOARD_DATA.age_groups;
+new Chart(document.getElementById("chart-age"), {
+  type: "bar",
+  data: {
+    labels: ages.map(a => a.age_group),
+    datasets: [{
+      data: ages.map(a => a.conversion_pct),
+      backgroundColor: ages.map(a => a.conversion_pct > 20 ? ACCENT : a.conversion_pct > 12 ? GOLD : INK_SOFT),
+      borderWidth: 0,
+    }],
+  },
+  options: baseOpts({
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: RULE }, ticks: { callback: v => v + "%" } },
+    },
+  }),
+});
+</script>
+
+</body>
+</html>

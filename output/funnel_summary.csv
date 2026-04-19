@@ -1,0 +1,6 @@
+stage,description,count,pct_of_total,stage_conversion_pct,drop_off
+Targeted,All clients placed into the campaign list,45211,100.0,100.0,0
+Reached,Contact channel known (cellular / telephone),32191,71.2,71.2,13020
+Engaged,Call duration > 60 seconds (real conversation),29030,64.21,90.18,3161
+Qualified,<= 3 campaign contacts (not over-contacted),23413,51.79,80.65,5617
+Converted,Subscribed to term deposit (y = yes),5289,11.7,22.59,18124
